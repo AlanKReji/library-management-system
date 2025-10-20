@@ -13,11 +13,11 @@ class Books(models.Model):
     total_copies = models.IntegerField(default = 0, validators = [MinValueValidator(0)])
     isDeleted = models.BooleanField(default = False)
     created_at = models.DateField(auto_now_add = True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='books_created')
+    # created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='books_created')
     updated_at = models.DateField(auto_now = True)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='books_updated')
+    # updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='books_updated')
     deleted_at = models.DateField(auto_now = True)
-    deleted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='books_deleted')
+    # deleted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='books_deleted')
 
     def __str__(self):
         return self.title
