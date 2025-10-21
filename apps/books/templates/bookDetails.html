@@ -1,0 +1,55 @@
+{% extends 'home.html'%}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4">    
+    <h1>Book Details</h1>
+</div>
+<table class="table table-striped mt-4">
+        <thead class="thead-dark">
+          <tr>
+            <th>Field</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Title</td>
+            <td><strong>{{ book.title }}</strong></td>
+          </tr>
+          <tr>
+            <td>Author</td>
+            <td><strong>{{ book.author }}</strong></td>
+          </tr>
+          <tr>
+            <td>ISBN</td>
+            <td><strong>{{ book.isbn }}</strong></td>
+          </tr>
+          <tr>
+            <td>Category</td>
+            <td><strong>{{ book.category }}</strong></td>
+          </tr>
+          <tr>
+            <td>Publisher</td>
+            <td><strong>{{ book.publisher }}</strong></td>
+          </tr>
+          <tr>
+            <td>Published At</td>
+            <td><strong>{{ book.published_at }}</strong></td>
+          </tr>
+          <tr>
+            <td>Total Copies</td>
+            <td><strong>{{ book.total_copies }}</strong></td>
+          </tr>
+          <tr>
+            <td>Available Copies</td>
+            <td><strong>{{ book.available_copies }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+<div class = "text-center gap-2">
+  <a href="{% url 'editBook' book.id %}" class="btn btn-warning me-4"> Edit</a>
+
+  <a href="{% url 'deleteBook' book.id %}" class="btn btn-danger"> Delete</a>
+
+</div>
+
+{% endblock %}

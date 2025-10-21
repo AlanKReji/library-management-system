@@ -21,3 +21,11 @@ class Books(models.Model):
 
     def __str__(self):
         return self.title
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['isbn'],
+                condition=~models.Q(isbn=None),
+                name='unique_isbn_not_null'
+            ),
+        ]
