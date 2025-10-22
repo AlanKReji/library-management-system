@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from .models import Books
 
 def home(request):
@@ -29,6 +30,7 @@ def addBook(request):
             total_copies=total_copies,
             available_copies=total_copies
         )
+        book.full_clean()
         book.save()
         return render(request, 'addBook.html', {'book': book})
     return render(request, 'addBook.html')
@@ -51,6 +53,7 @@ def editBook(request, id):
         difference = total_copies - book.total_copies
         book.total_copies = total_copies
         book.available_copies += difference
+        book.updated_at = timezone.now()
         book.full_clean()
         book.save()
 
@@ -59,5 +62,6 @@ def editBook(request, id):
 def deleteBook(request, id):
     book = Books.objects.get(id = id , isDeleted = False)
     book.isDeleted = True
+    book.deleted_at =  timezone.now()
     book.save() 
     return redirect('getAllBooks')
