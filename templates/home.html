@@ -16,8 +16,18 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="{% url 'home' %}">Library Dashboard</a>
+      {% if user.role == 'ADMIN' %}
+      <a class="navbar-brand" href="{% url 'home' %}">Admin Dashboard</a>
+      {% elif user.role == 'LIBRARIAN' %}
+      <a class="navbar-brand" href="{% url 'home' %}">Librarian Dashboard</a>
+      {% else %}
+      <a class="navbar-brand" href="{% url 'home' %}">User Dashboard</a>
+      {% endif %}
       <a href="{% url 'getAllBooks'%}"> All Books</a>
+      {% if user.role == 'ADMIN' or user.role == 'LIBRARIAN' %}
+      <a href = "{% url 'getAllUsers' %}"> All Users </a>
+      {% endif %}
+      <a href="{% url 'logout' %}"> Logout </a>
 
     </nav>
 

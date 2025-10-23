@@ -1,0 +1,97 @@
+{% extends 'home.html' %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4">
+	<h1>Details for User: {{ userView.user_id }}</h1>
+</div>
+<table class="table table-striped mt-4">
+	<thead class="thead-dark">
+		<tr>
+			<th>Field</th>
+			<th>Details</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>User ID</td>
+			<td><strong>{{ userView.user_id }}</strong></td>
+		</tr>
+		<tr>
+			<td>Username</td>
+			<td><strong>{{ userView.username }}</strong></td>
+			         
+		</tr>
+		         
+		<tr>
+			           
+			<td>Email</td>
+			           
+			<td><strong>{{ userView.email }}</strong></td>
+			         
+		</tr>
+		         
+		<tr>
+			           
+			<td>Role</td>
+			           
+			<td><strong>{{ userView.get_role_display }}</strong></td>
+			         
+		</tr>
+		<tr class="table-secondary">
+			<td><strong>Metadata</strong></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Last Login</td>
+			<td>
+				<strong>{{ userView.last_login }}</strong>
+			</td>
+		</tr>
+		<tr>
+			<td>Created At</td>
+			<td>
+				<strong>{{ userView.created_at|date:"M d, Y P"|default:"N/A" }}</strong>
+			</td>
+		</tr>
+		<tr>
+			<td>Created By</td>
+			<td>
+				<strong
+					>{{ userView.created_by.user_id|default:"Self-Registered" }}</strong
+				>
+			</td>
+		</tr>
+		<tr>
+			<td>Updated At</td>
+			<td>
+				<strong>{{ userView.updated_at|date:"M d, Y P"|default:"N/A" }}</strong>
+			</td>
+		</tr>
+		<tr>
+			<td>Updated By</td>
+			<td>
+				<strong>{{ userView.updated_by.user_id|default:"N/A" }}</strong>
+			</td>
+		</tr>
+	</tbody>
+</table>
+{% if user.role == 'ADMIN' or user.role == 'LIBRARIAN' %}
+<div class="text-center gap-2">
+	<a href="{% url 'editUser' userView.id %}" class="btn btn-warning me-4">
+		Edit</a
+	>
+	{% if userView.id != user.id %}
+	<form
+		method="post"
+		action="{% url 'deleteUser' userView.id %}"
+		style="display: inline">
+		{% csrf_token %}
+		<button
+			type="submit"
+			class="btn btn-danger"
+			onclick="return confirm('Are you sure you want to delete the user: {{ userView.username }}?');">
+			Delete
+		</button>
+	</form>
+	{% endif %}
+</div>
+{% endif %}
+{% endblock %}
