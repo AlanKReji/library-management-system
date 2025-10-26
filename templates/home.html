@@ -78,6 +78,16 @@
             <a class="nav-link" href="{% url 'getAllUsers' %}"> All Users </a>
             {% endif %}
           </li>
+          <li class="nav-item {% if request.resolver_match.url_name == 'getMyBorrowHistory' %}active{% endif %}">
+            {% if user.role == 'USER' or user.role == 'LIBRARIAN' %}
+            <a class="nav-link" href="{% url 'getMyBorrowHistory' %}"> My History </a>
+            {% endif %}
+          </li>
+          <li class="nav-item {% if request.resolver_match.url_name == 'getAllBorrowHistory' %}active{% endif %}">
+            {% if user.role == 'ADMIN' or user.role == 'LIBRARIAN' %}
+            <a class="nav-link" href="{% url 'getAllBorrowHistory' %}"> All History </a>
+            {% endif %}
+          </li>
           <li class="nav-item align-self-center">
             <a class="btn btn-sm btn-outline-light btn-logout-custom" href="{% url 'logout' %}"> Logout </a>
           </li>

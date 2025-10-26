@@ -22,4 +22,5 @@ urlpatterns = [
     path('home/', home, name = 'home'),
     path('books/', include('apps.books.urls')),
     path('users/', include('apps.users.urls')),
+    path('borrows/', include('apps.borrows.urls')),
 ]

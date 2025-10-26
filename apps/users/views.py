@@ -65,16 +65,16 @@ def userDetails(request, id):
 @login_required
 @user_passes_test(isAdminOrLibrarian)
 def editUser(request, id):
-    editUser_obj = Users.objects.get(id=id, isDeleted=False)
-    # Permission check: Prevent editing users outside scope, but allow admin self-edit
+    editUser = Users.objects.get(id=id, isDeleted=False)
+ 
     if request.user.role == Users.Role.ADMIN:
-        if editUser_obj.role not in [Users.Role.LIBRARIAN, Users.Role.USER] and editUser_obj.id != request.user.id:
+        if editUser.role not in [Users.Role.LIBRARIAN, Users.Role.USER] and editUser.id != request.user.id:
             return redirect('getAllUsers')  # Can't edit other admins, but can edit self
     elif request.user.role == Users.Role.LIBRARIAN:
-        if editUser_obj.role != Users.Role.USER:
+        if editUser.role != Users.Role.USER and editUser.id != request.user.id:
             return redirect('getAllUsers')  # Can't edit non-users
     if request.method == 'POST':
-        form = UserEditForm(request.POST, instance=editUser_obj, user=request.user)
+        form = UserEditForm(request.POST, instance=editUser, user=request.user)
         if form.is_valid():
             user = form.save(commit=False)
             user.updated_by = request.user
@@ -82,12 +82,12 @@ def editUser(request, id):
             user.save()
             return redirect('userDetails', id=user.id)
     else:
-        form = UserEditForm(instance=editUser_obj, user=request.user)
+        form = UserEditForm(instance=editUser, user=request.user)
     # Context for role dropdown
     is_admin = isAdmin(request.user)
     role_choices = [(Users.Role.LIBRARIAN, 'Librarian'), (Users.Role.USER, 'User')]
-    can_admin_edit_role = is_admin and editUser_obj.role in [Users.Role.LIBRARIAN, Users.Role.USER] and editUser_obj.id != request.user.id  # Can't edit own role
-    return render(request, 'editUser.html', {'form': form, 'editUser': editUser_obj, 'isAdmin': is_admin, 'role_choices': role_choices, 'can_admin_edit_role': can_admin_edit_role})
+    can_admin_edit_role = is_admin and editUser.role in [Users.Role.LIBRARIAN, Users.Role.USER] and editUser.id != request.user.id  # Can't edit own role
+    return render(request, 'editUser.html', {'form': form, 'editUser': editUser, 'isAdmin': is_admin, 'role_choices': role_choices, 'can_admin_edit_role': can_admin_edit_role})
 
 @login_required
 @user_passes_test(isAdmin)

@@ -1,0 +1,41 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>All Borrow History</h1>
+</div>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>User Name</th>
+                    <th>Book Title</th>
+                    <th>Borrow Date</th>
+                    <th>Due Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                    <th>Fine Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for borrow in allBorrows %}
+                <tr>
+                    <td>{{ borrow.user.user_id }}</td>
+                    <td>{{ borrow.user.username }}</td>
+                    <td>{{ borrow.book.title }}</td>
+                    <td>{{ borrow.borrow_date|date:"M d, Y" }}</td>
+                    <td>{{ borrow.due_date|date:"M d, Y" }}</td>
+                    <td>{% if borrow.return_date %}{{ borrow.return_date|date:"M d, Y" }}{% else %}Not Returned{% endif %}</td>
+                    <td>{{ borrow.get_status_display }}</td>
+                    <td>₹{{ borrow.fine_amount }}</td>
+                </tr>
+                {% empty %}
+          <tr>
+            <td colspan="8" class="text-center">
+              No books where borrowed by anyone.
+            </td>
+          </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

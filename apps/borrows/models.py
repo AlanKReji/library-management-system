@@ -8,7 +8,7 @@ from decimal import Decimal
 def get_due_date():
     return timezone.now() + timedelta(days=14)  # Assuming 14 days borrow period; adjust as needed
 
-class Borrow(models.Model):
+class Borrows(models.Model):
     STATUS_CHOICES = (
         ('PENDING', 'Pending'),
         ('APPROVED', 'Approved'),
