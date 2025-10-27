@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from .models import Users
+from apps.borrows.models import Borrows
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import UserRegistrationForm, UserLoginForm, UserEditForm  # Added UserEditForm
@@ -66,7 +68,10 @@ def userDetails(request, id):
 @user_passes_test(isAdminOrLibrarian)
 def editUser(request, id):
     editUser = Users.objects.get(id=id, isDeleted=False)
- 
+    active_borrows = Borrows.objects.filter(user=editUser, status='APPROVED').exists()
+    if active_borrows:
+        messages.error(request, "Cannot edit user with active borrows.")
+        return redirect('userDetails', id=id)
     if request.user.role == Users.Role.ADMIN:
         if editUser.role not in [Users.Role.LIBRARIAN, Users.Role.USER] and editUser.id != request.user.id:
             return redirect('getAllUsers')  # Can't edit other admins, but can edit self
@@ -94,8 +99,12 @@ def editUser(request, id):
 def deleteUser(request, id):
     if request.user.id == id:
         return redirect('getAllUsers')
+    user = Users.objects.get(id=id, isDeleted=False)
+    active_borrows = Borrows.objects.filter(user=user, status='APPROVED').exists()
+    if active_borrows:
+        messages.error(request, "Cannot edit user with active borrows.")
+        return redirect('userDetails', id=id)
     try:
-        user = Users.objects.get(id=id, isDeleted=False)
         user.isDeleted = True
         user.is_active = False
         user.deleted_by = request.user

@@ -26,6 +26,9 @@
             
             <td>
                 <a href="{% url 'bookDetails' book.id %}"> View </a>
+                {% if book.available_copies > 0 and user.role != 'ADMIN' and approved_borrows_count|length < 5 %}
+                  | <a href="{% url 'borrowRequest' book.id %}">Borrow</a>
+                {% endif %}
             </td>
           </tr>
           {% empty %}

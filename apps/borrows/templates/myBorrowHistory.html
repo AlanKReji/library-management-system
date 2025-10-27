@@ -22,7 +22,13 @@
                     <td>{{ borrow.borrow_date|date:"M d, Y" }}</td>
                     <td>{{ borrow.due_date|date:"M d, Y" }}</td>
                     <td>{% if borrow.return_date %}{{ borrow.return_date|date:"M d, Y" }}{% else %}Not Returned{% endif %}</td>
-                    <td>{{ borrow.get_status_display }}</td>
+                    <td>
+                        {{ borrow.get_status_display }}
+                        {% if borrow.status == 'APPROVED' %}
+                        <br>
+                        <a href="{% url 'returnBook' borrow.id %}" class="btn btn-warning btn-sm">Return</a>
+                        {% endif %}
+                    </td>
                     <td>₹{{ borrow.fine_amount }}</td>
                 </tr>
                 {% empty %}

@@ -26,7 +26,14 @@
                     <td>{{ borrow.borrow_date|date:"M d, Y" }}</td>
                     <td>{{ borrow.due_date|date:"M d, Y" }}</td>
                     <td>{% if borrow.return_date %}{{ borrow.return_date|date:"M d, Y" }}{% else %}Not Returned{% endif %}</td>
-                    <td>{{ borrow.get_status_display }}</td>
+                    <td>
+                        {{ borrow.get_status_display }}
+                        {% if borrow.status == 'PENDING' %}
+                        <br>
+                        <a href="{% url 'approveBorrow' borrow.id %}" class="btn btn-success btn-sm">Approve</a>
+                        <a href="{% url 'rejectBorrow' borrow.id %}" class="btn btn-danger btn-sm">Reject</a>
+                        {% endif %}
+                    </td>
                     <td>₹{{ borrow.fine_amount }}</td>
                 </tr>
                 {% empty %}
