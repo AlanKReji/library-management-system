@@ -5,6 +5,9 @@ from apps.books.models import Books
 from apps.users.models import Users
 from .models import Borrows
 from django.utils import timezone
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 # Create your views here.
 def isAdmin(user):
     return user.is_authenticated and user.role == Users.Role.ADMIN
@@ -17,17 +20,61 @@ def isAdminOrLibrarian(user):
 
 @login_required
 def getMyBorrowHistory(request):
-    myBorrows = Borrows.objects.filter(user = request.user).order_by('-borrow_date')
-    return render(request, 'myBorrowHistory.html', {'myBorrows': myBorrows})
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '')
+    myBorrows = Borrows.objects.filter(user=request.user)
+
+    if search:
+        myBorrows = myBorrows.filter(
+            Q(book__title__icontains=search) | Q(book__author__icontains=search)
+        )
+
+    if status:
+        myBorrows = myBorrows.filter(status=status)
+
+    myBorrows = myBorrows.order_by('-borrow_date')
+    paginator = Paginator(myBorrows, 6)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+
+    status_choices = Borrows.STATUS_CHOICES
+    return render(request, 'myBorrowHistory.html', {
+        'myBorrows': page,
+        'search_query': search,
+        'status_filter': status,
+        'status_choices': status_choices
+    })
 
 @login_required
 @user_passes_test(isAdminOrLibrarian)
 def getAllBorrowHistory(request):
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '')
     if isAdmin(request.user):
-        allBorrows = Borrows.objects.filter(user__role__in=[Users.Role.LIBRARIAN, Users.Role.USER]).order_by('-borrow_date')
+        allBorrows = Borrows.objects.filter(user__role__in=[Users.Role.LIBRARIAN, Users.Role.USER])
     elif isLibrarian(request.user):
-        allBorrows = Borrows.objects.filter(user__role__in = Users.Role.USER).order_by('-borrow_date')
-    return render(request, 'allBorrowHistory.html', {'allBorrows': allBorrows})
+        allBorrows = Borrows.objects.filter(user__role__in=Users.Role.USER)
+    if search:
+        allBorrows = allBorrows.filter(
+            Q(user__username__icontains=search) |
+            Q(user__email__icontains=search) |
+            Q(book__title__icontains=search) |
+            Q(book__author__icontains=search)
+        )
+
+    if status:
+        allBorrows = allBorrows.filter(status=status)
+    allBorrows = allBorrows.order_by('-borrow_date')
+    paginator = Paginator(allBorrows, 5)  
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    status_choices = Borrows.STATUS_CHOICES
+    return render(request, 'allBorrowHistory.html', {
+        'allBorrows': page,
+        'search_query': search,
+        'status_filter': status,
+        'status_choices': status_choices
+    })
 
 @login_required
 @user_passes_test(isAdminOrLibrarian)

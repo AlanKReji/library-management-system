@@ -1,11 +1,36 @@
 {% extends 'home.html' %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4">    
+<div class="d-flex justify-content-between align-items-center mt-4">
     <h1>All Books</h1>
 </div>
 {% if user.role == 'ADMIN' or user.role == 'LIBRARIAN' %}
-<a href="{% url 'addBook' %}" class = "btn btn-primary"> Add Book</a>
+<a href="{% url 'addBook' %}" class="btn btn-primary"> Add Book</a>
 {% endif %}
+
+<form method="get" class="mt-4 mb-4">
+  <div class="row">
+      <div class="col-md-6">
+          <div class="input-group">
+              <input type="text" name="search" class="form-control" placeholder="Search by title or author..." value="{{ search_query }}">
+              <div class="input-group-append">
+                  <button class="btn btn-outline-secondary" type="submit">Search</button>
+              </div>
+          </div>
+      </div>
+      <div class="col-md-4">
+          <select name="category" class="form-control">
+              <option value="">All Categories</option>
+              {% for cat in categories %}
+                  <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+          </select>
+      </div>
+        <div class="col-md-2 d-flex align-items-center">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Filter</button>
+            <a href="{% url 'getAllBooks' %}" class="btn btn-outline-danger btn-sm ml-2">Clear</a>
+        </div>
+</form>
+
 <table class="table table-striped mt-4">
         <thead class="thead-dark">
           <tr>
@@ -19,14 +44,14 @@
         <tbody>
           {% for book in books %}
           <tr>
-            <td>{{ forloop.counter }}</td> 
+            <td>{{ books.start_index|add:forloop.counter0 }}</td>
             <td>{{ book.title }}</td>
             <td>{{ book.author }}</td>
-            <td>{{ book.available_copies }} / {{ book.total_copies }}</td> 
-            
+            <td>{{ book.available_copies }} / {{ book.total_copies }}</td>
+
             <td>
                 <a href="{% url 'bookDetails' book.id %}"> View </a>
-                {% if book.available_copies > 0 and user.role != 'ADMIN' and approved_borrows_count|length < 5 %}
+                {% if book.available_copies > 0 and user.role != 'ADMIN' %}
                   | <a href="{% url 'borrowRequest' book.id %}">Borrow</a>
                 {% endif %}
             </td>
@@ -40,4 +65,41 @@
           {% endfor %}
         </tbody>
       </table>
+
+<!-- Pagination -->
+{% if books.has_other_pages %}
+<nav aria-label="Books pagination">
+    <ul class="pagination justify-content-center">
+        {% if books.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page=1">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page={{ books.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        {% for num in books.paginator.page_range %}
+            {% if books.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > books.number|add:'-3' and num < books.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if books.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page={{ books.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}page={{ books.paginator.num_pages }}">Last</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

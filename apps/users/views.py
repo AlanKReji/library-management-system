@@ -6,7 +6,8 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import UserRegistrationForm, UserLoginForm, UserEditForm  # Added UserEditForm
 from django.contrib.auth import authenticate, login, logout
-
+from django.core.paginator import Paginator
+from django.db.models import Q
 # Create your views here.
 def isAdmin(user):
     return user.is_authenticated and user.role == Users.Role.ADMIN
@@ -26,8 +27,19 @@ def getAllUsers(request):
     elif isLibrarian(loggedIn):
         users = Users.objects.filter(isDeleted=False, role=Users.Role.USER)
     users = users | Users.objects.filter(pk=loggedIn.pk)
-    users = users.distinct().order_by('username')
-    return render(request, 'users.html', {'users': users})
+    users = users.distinct()
+    search = request.GET.get('search', '').strip()
+    if search:
+        users = users.filter(
+            Q(username__icontains=search) | Q(email__icontains=search)
+        )
+
+    users = users.order_by('username')
+    paginator = Paginator(users, 6)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+
+    return render(request, 'users.html', {'users': page, 'search': search})
 
 def register(request):
     if request.method == 'POST':
@@ -102,7 +114,7 @@ def deleteUser(request, id):
     user = Users.objects.get(id=id, isDeleted=False)
     active_borrows = Borrows.objects.filter(user=user, status='APPROVED').exists()
     if active_borrows:
-        messages.error(request, "Cannot edit user with active borrows.")
+        messages.error(request, "Cannot delete user with active borrows.")
         return redirect('userDetails', id=id)
     try:
         user.isDeleted = True

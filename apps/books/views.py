@@ -6,6 +6,9 @@ from django.contrib import messages
 from apps.users.models import Users
 from apps.borrows.models import Borrows
 from .forms import BookForm 
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 
 def isAdmin(user):
     return user.is_authenticated and user.role == Users.Role.ADMIN
@@ -18,13 +21,47 @@ def isAdminOrLibrarian(user):
 
 @login_required
 def home(request):
+    search = request.GET.get('search', '').strip()
+    category = request.GET.get('category', '')
     books = Books.objects.filter(isDeleted=False).order_by('title')
-    return render(request, 'home.html', {'books': books})
+    if search:
+        books = books.filter(
+            Q(title__icontains=search) | Q(author__icontains=search)
+        )
+    if category:
+        books = books.filter(category__icontains=category)
+    books = books.order_by('title')
+    paginator = Paginator(books, 5)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    categories = set()
+    for cat in Books.objects.values_list('category', flat=True).distinct().exclude(category__isnull=True).exclude(category=''):
+        categories.update(cat.split('/'))
+    categories = sorted(list(categories))
+    return render(request, 'home.html', {'books': page, 'search': search, 'category': category, 'categories': categories})
 
 @login_required
 def getAllBooks(request):
-    books = Books.objects.filter(isDeleted=False).order_by('title')
-    return render(request, 'books.html', {'books': books})
+    search_query = request.GET.get('search', '').strip()
+    category_filter = request.GET.get('category', '')
+    books = Books.objects.filter(isDeleted=False)
+    if search_query:
+        books = books.filter(
+            Q(title__icontains=search_query) | Q(author__icontains=search_query)
+        )
+    if category_filter:
+        books = books.filter(category__icontains=category_filter)
+    books = books.order_by('title')
+    paginator = Paginator(books, 10)  # 10 books per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    # Extract unique categories by splitting on '/'
+    categories = set()
+    for cat in Books.objects.values_list('category', flat=True).distinct().exclude(category__isnull=True).exclude(category=''):
+        if cat:
+            categories.update(cat.split('/'))
+    categories = sorted(list(categories))
+    return render(request, 'books.html', {'books': page_obj, 'search_query': search_query, 'category_filter': category_filter, 'categories': categories})
 
 @login_required
 @user_passes_test(isAdminOrLibrarian)

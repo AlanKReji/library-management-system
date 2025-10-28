@@ -4,9 +4,37 @@
 <div class="container mt-4">
     <h1>All Borrow History</h1>
 </div>
+
+<!-- Search and Filter Form -->
+<form method="get" class="mt-4 mb-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search by username, email, title, author..." value="{{ search_query }}">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select name="status" class="form-control">
+                <option value="">All Statuses</option>
+                {% for status_value, status_display in status_choices %}
+                    <option value="{{ status_value }}" {% if status_filter == status_value %}selected{% endif %}>{{ status_display }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-center">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Filter</button>
+            <a href="{% url 'getAllBorrowHistory' %}" class="btn btn-outline-danger btn-sm ml-2">Clear</a>
+        </div>
+    </div>
+</form>
+
         <table class="table table-striped">
             <thead class="thead-dark">
                 <tr>
+                    <th>S.No.</th>
                     <th>User ID</th>
                     <th>User Name</th>
                     <th>Book Title</th>
@@ -20,6 +48,7 @@
             <tbody>
                 {% for borrow in allBorrows %}
                 <tr>
+                    <td>{{ allBorrows.start_index|add:forloop.counter0 }}</td>
                     <td>{{ borrow.user.user_id }}</td>
                     <td>{{ borrow.user.username }}</td>
                     <td>{{ borrow.book.title }}</td>
@@ -38,11 +67,48 @@
                 </tr>
                 {% empty %}
           <tr>
-            <td colspan="8" class="text-center">
+            <td colspan="9" class="text-center">
               No books where borrowed by anyone.
             </td>
           </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+<!-- Pagination -->
+{% if allBorrows.has_other_pages %}
+<nav aria-label="All Borrow History pagination">
+    <ul class="pagination justify-content-center">
+        {% if allBorrows.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page=1">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ allBorrows.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        {% for num in allBorrows.paginator.page_range %}
+            {% if allBorrows.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > allBorrows.number|add:'-3' and num < allBorrows.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if allBorrows.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ allBorrows.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ allBorrows.paginator.num_pages }}">Last</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}
